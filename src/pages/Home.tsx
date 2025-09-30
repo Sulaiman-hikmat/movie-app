@@ -3,7 +3,6 @@ import Navbar from "../components/Navbar";
 import MovieCard from "../components/MovieCard";
 import { fetchMovie } from "../services/Movie";
 
-
 interface Movie {
   Title: string;
   Year: string;
@@ -61,9 +60,25 @@ const Home: React.FC = () => {
       <Navbar onSearch={handleSearch} />
 
       <main className="px-6 py-8">
-        {loading && <p className="text-gray-400 text-center">Loading movies...</p>}
-        {error && <p className="text-red-500 text-center">{error}</p>}
+        {/* Loading Spinner */}
+        {loading && (
+  <div className="flex flex-col justify-center items-center h-[60vh] space-y-4">
+    {/* Reel-style loader */}
+    <div className="flex space-x-2">
+      <div className="w-5 h-5 bg-yellow-400 rounded-full animate-bounce"></div>
+      <div className="w-5 h-5 bg-red-500 rounded-full animate-bounce delay-150"></div>
+      <div className="w-5 h-5 bg-blue-500 rounded-full animate-bounce delay-300"></div>
+    </div>
+    <p className="text-gray-400 text-lg animate-pulse">Loading movies...</p>
+  </div>
+)}
 
+        {/* Error Message */}
+        {error && !loading && (
+          <p className="text-red-500 text-center">{error}</p>
+        )}
+
+        {/* Empty State */}
         {!loading && !error && movies.length === 0 && (
           <div className="flex flex-col items-center justify-center h-[70vh]">
             <p className="text-gray-400 text-lg">
@@ -72,6 +87,7 @@ const Home: React.FC = () => {
           </div>
         )}
 
+        {/* Movie Results */}
         {!loading && !error && movies.length > 0 && (
           <div>
             <h2 className="text-2xl font-bold mb-4">Search Results</h2>
