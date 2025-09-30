@@ -1,0 +1,95 @@
+import { useEffect, useState } from "react";
+import Navbar from "../components/Navbar";
+import MovieCard from "../components/MovieCard";
+import { fetchMovie } from "../services/Movie";
+
+
+interface Movie {
+  Title: string;
+  Year: string;
+  Poster: string;
+}
+
+const Home: React.FC = () => {
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [query, setQuery] = useState("Interstellar");
+
+  useEffect(() => {
+    if (!query) return;
+
+    const loadMovies = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        let data;
+        if (query.startsWith("tt")) {
+          data = await fetchMovie({ i: query });
+        } else {
+          data = await fetchMovie({ s: query });
+        }
+
+        if (data.Response === "True") {
+          if (data.Search) {
+            setMovies(data.Search);
+          } else {
+            setMovies([data]);
+          }
+        } else {
+          setMovies([]);
+          setError(data.Error || "No movies found.");
+        }
+      } catch (err) {
+        setError("Something went wrong while fetching movies.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMovies();
+  }, [query]);
+
+  // Search handler
+  const handleSearch = (newQuery: string) => {
+    setQuery(newQuery.trim());
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <Navbar onSearch={handleSearch} />
+
+      <main className="px-6 py-8">
+        {loading && <p className="text-gray-400 text-center">Loading movies...</p>}
+        {error && <p className="text-red-500 text-center">{error}</p>}
+
+        {!loading && !error && movies.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-[70vh]">
+            <p className="text-gray-400 text-lg">
+              🔍 Search for movies above to get started
+            </p>
+          </div>
+        )}
+
+        {!loading && !error && movies.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Search Results</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+              {movies.map((movie, index) => (
+                <MovieCard
+                  key={index}
+                  title={movie.Title}
+                  year={movie.Year}
+                  poster={movie.Poster}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default Home;
